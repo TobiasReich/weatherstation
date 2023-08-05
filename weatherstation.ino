@@ -36,7 +36,19 @@ boolean Dstate=0;         //store the value of D0
   - outside (at normal air) = 2100 */
 #define SOIL_DRYNESS_HIGH 2000   
 #define SOIL_DRYNESS_MEDIUM 1300
-#define SOIL_HUMIDITY_PIN 34
+#define SOIL_HUMIDITY_PIN 34 // Pin 34 5th from bottom right
+
+// Functions declaration
+void drawSun(int x, int y);
+void drawWaterdrop(int x, int y);
+void drawProgressBar(int x, int y, int percent);
+void showSplashscreen();
+void processTemperatureHumidtyPressure();
+void processRainSensor();
+void processSoilHumidity();
+
+// --------------------------------------------
+
 
 
 // Air quality
@@ -55,11 +67,13 @@ void drawSun(int x, int y){
   Paint_DrawLine(x+10, y+10, x+6, y+6, BLACK, DOT_PIXEL_1X1, LINE_STYLE_SOLID); // topright
 }
 
+
 void drawWaterdrop(int x, int y){
   Paint_DrawCircle(x, y+5, 5, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
   Paint_DrawCircle(x, y, 3, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
   Paint_DrawCircle(x, y-2, 1, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
 }
+
 
 void drawProgressBar(int x, int y, int percent){
   Paint_DrawRectangle(x, y, x+50, y+15, BLACK, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
@@ -72,7 +86,8 @@ void showSplashscreen() {
   Serial.println("SelectImage:BlackImage\r\n");
   Paint_SelectImage(BlackImage);
   Paint_Clear(WHITE);
-  Paint_DrawString_EN(90, 130, "Wetterstation", &Font20, WHITE, BLACK);
+  Paint_DrawString_EN(105, 140, "Wetterstation", &Font24, WHITE, BLACK);
+  Paint_DrawLine(95, 170, 340, 170, BLACK, DOT_PIXEL_1X1, LINE_STYLE_DOTTED); // above
   EPD_4IN2_Display(BlackImage);
 }
 
@@ -127,6 +142,7 @@ void processTemperatureHumidtyPressure(){
   }
 }
 
+
 void processRainSensor(){
   Paint_DrawString_EN(20, 170, "Regen:", &Font20, WHITE, BLACK);
   Astate=analogRead(analogPin);  //read the value of A0
@@ -144,9 +160,12 @@ void processRainSensor(){
     Serial.println("RAIN");
     //if the value of D0 is LOW
     Paint_DrawString_EN(200, 170, "Ja", &Font20, WHITE, BLACK);
-    //drawWaterdrop(320, 170);
+    drawWaterdrop(320, 170);
+    drawWaterdrop(335, 170);
+    drawWaterdrop(350, 170);
   }
 }
+
 
 void processSoilHumidity(){
   int soilDryness = analogRead(SOIL_HUMIDITY_PIN);
@@ -174,6 +193,8 @@ void processSoilHumidity(){
   }
 }
 
+
+// --------------------------------------------------------
 
 
 void setup()
@@ -203,13 +224,7 @@ void setup()
     while (1);
   }
 
-  //showSplashscreen();
-  Paint_NewImage(BlackImage, EPD_4IN2_WIDTH, EPD_4IN2_HEIGHT, 0, WHITE);
-  Serial.println("SelectImage:BlackImage\r\n");
-  Paint_SelectImage(BlackImage);
-  Paint_Clear(WHITE);
-  Paint_DrawString_EN(90, 130, "Wetterstation", &Font24, WHITE, BLACK);
-  EPD_4IN2_Display(BlackImage);
+  showSplashscreen();
 
   DEV_Delay_ms(500);
 }
@@ -220,7 +235,6 @@ void loop()
   // Delay between measurements.
   DEV_Delay_ms(REFRESH_TIME);
 
- /* 
   // Draw the results screen
   Paint_Clear(WHITE);
 
@@ -235,7 +249,7 @@ void loop()
 
   // ------ Soil Humidity ------
   processSoilHumidity();
-*/
+
   // ------ Draw the image ------
   EPD_4IN2_Display(BlackImage);
 }
