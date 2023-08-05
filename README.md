@@ -32,6 +32,8 @@ https://www.seeedstudio.com/Grove-Capacitive-Moisture-Sensor-Corrosion-Resistant
 
 # Pinouts (for now)
 
+![Pinout](doc/PinOut.webp "Pinout")
+
 ## Barometer
 
 Black - GROUND
@@ -51,4 +53,14 @@ Brown - GPIO 25 (D0)
 
 ## Humiture Sensor
 
+Black - GROUND
+Red - 3.3V
+Yellow - GPIO 32
+
+
 ## Soil Moisture Sensor
+
+Black - GROUND
+Red - 3.3V
+White - GPIO ??
+Brown - GPIO ??

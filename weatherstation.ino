@@ -14,10 +14,8 @@
 // 9 x 7 cm display size
 // https://www.waveshare.com/4.2inch-e-Paper.htm
 
-
-
-#define DHTTYPE    DHT11     // DHT 11
-#define DHTPIN 32 
+#define DHTTYPE    DHT11  // DHT 11
+#define DHTPIN 32         //7th from bottom right
 DHT dht(DHTPIN, DHTTYPE); // Digital Humidity/Temperature sensor
 Adafruit_BMP085 bmp;      // I2C controlled Barometer
 
@@ -29,7 +27,8 @@ uint32_t REFRESH_TIME = 5000;
 // Rain Sensor
 const int analogPin=A0;   //the AO of the module attach to A0 (PIN 36) (Left 3rd from top)
 const int digitalPin=25;  //D0 attach to pin25 --> DAC_1 (GPIO25) (Left 9th from top)
-
+int Astate=0;             //store the value of A0
+boolean Dstate=0;         //store the value of D0
 
 /*Soil Humidity
   - fully in Water          = 1100
@@ -129,9 +128,6 @@ void processTemperatureHumidtyPressure(){
 }
 
 void processRainSensor(){
-  int Astate=0;             //store the value of A0
-  boolean Dstate=0;         //store the value of D0
-
   Paint_DrawString_EN(20, 170, "Regen:", &Font20, WHITE, BLACK);
   Astate=analogRead(analogPin);  //read the value of A0
   Serial.print("A0: ");
@@ -148,10 +144,7 @@ void processRainSensor(){
     Serial.println("RAIN");
     //if the value of D0 is LOW
     Paint_DrawString_EN(200, 170, "Ja", &Font20, WHITE, BLACK);
-    drawWaterdrop(320, 170);
-    //drawWaterdrop(330, 170);
-    //drawWaterdrop(340, 170);
-    //drawWaterdrop(350, 170);
+    //drawWaterdrop(320, 170);
   }
 }
 
@@ -227,6 +220,7 @@ void loop()
   // Delay between measurements.
   DEV_Delay_ms(REFRESH_TIME);
 
+ /* 
   // Draw the results screen
   Paint_Clear(WHITE);
 
@@ -241,7 +235,7 @@ void loop()
 
   // ------ Soil Humidity ------
   processSoilHumidity();
-
+*/
   // ------ Draw the image ------
   EPD_4IN2_Display(BlackImage);
 }
