@@ -32,35 +32,37 @@ https://www.seeedstudio.com/Grove-Capacitive-Moisture-Sensor-Corrosion-Resistant
 
 # Pinouts (for now)
 
+This is not the exact model but it seems to have the same pinout. Sadly the documentation on Waveshare is not the best.
+
 ![Pinout](doc/PinOut.webp "Pinout")
 
 ## Barometer
 
-Black - GROUND
-Red - 3.3V
-White - GPIO 21
-Brown - GPIO 22
+- Black - GROUND
+- Red - 3.3V
+- White - GPIO 21
+- Brown - GPIO 22
 
 ## Raindrop Sensor
 
 This is connected via a Raindrop Sensor (which connects again to the device).
 
-Black - GROUND
-Red - 3.3V
-White - GPIO 36 (ANALOG AO)
-Brown - GPIO 25 (D0)
+- Black - GROUND
+- Red - 3.3V
+- White - GPIO 36 (ANALOG AO)
+- Brown - GPIO 25 (D0)
 
 
 ## Humiture Sensor
 
-Black - GROUND
-Red - 3.3V
-Yellow - GPIO 32
+- Black - GROUND
+- Red - 3.3V
+- Yellow - GPIO 32
 
 
 ## Soil Moisture Sensor
 
-Black - GROUND
-Red - 3.3V
-White - GPIO ??
-Brown - GPIO ??
+- Black - GROUND
+- Red - 3.3V
+- White - GPIO ??
+- Brown - GPIO ??
