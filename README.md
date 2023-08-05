@@ -36,6 +36,11 @@ This is not the exact model but it seems to have the same pinout. Sadly the docu
 
 ![Pinout](doc/PinOut.webp "Pinout")
 
+Right now (06.08.23) it still looks like that (and in German only). But you get an idea where this project might go.
+
+![First test](doc/weatherstation-alpha01.jpg "a first test")
+
+
 ## Barometer
 
 - Black - GROUND
