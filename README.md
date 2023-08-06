@@ -29,6 +29,10 @@ Furthermore the device uses a soil moisture senesor from here:
 
 https://www.seeedstudio.com/Grove-Capacitive-Moisture-Sensor-Corrosion-Resistant.html
 
+And an air quality sensor from here:
+
+https://wiki.seeedstudio.com/Grove-VOC_and_eCO2_Gas_Sensor-SGP30/
+
 
 # Pinouts (for now)
 
@@ -38,15 +42,17 @@ This is not the exact model but it seems to have the same pinout. Sadly the docu
 
 Right now (06.08.23) it still looks like that (and in German only). But you get an idea where this project might go.
 
-![First test](doc/weatherstation-alpha01.jpg "a first test")
+![First test](doc/weatherstation-alpha02.jpg "a first test")
 
 
 ## Barometer
 
 - Black - GROUND
 - Red - 3.3V
-- White - GPIO 21
-- Brown - GPIO 22
+- White - GPIO 21 (DEFAULT SDA)
+- Brown - GPIO 22 (DEFAULT SCL)
+- I2C: 0x77
+
 
 ## Raindrop Sensor
 
@@ -71,3 +77,32 @@ This is connected via a Raindrop Sensor (which connects again to the device).
 - Red - 3.3V
 - White - GPIO ??
 - Brown - GPIO ??
+
+
+## Air Quality Sensor
+
+- Black - GROUND
+- Red - 3.3V
+- White - GPIO 21 (DEFAULT SDA)
+- Brown - GPIO 22 (DEFAULT SCL)
+- I2C: 0x58
+
+NOTE: they share the same
+
+I also calculate the "air quality" by very simple means.
+
+These are the constants I use:
+
+#define VOC_LOW 25
+#define VOC_MED 75
+#define CO2_LOW 450
+#define CO2_MED 550
+
+And I draw them on the display in a very simple graph, indicating the quality.
+This surely can be done better.
+
+
+
+# Known issues:
+
+When there is rain on the rain sensor, the voltage it draws seems to be too high and the display doesn't refresh anymore. I guess I have to plug this to the 5V. Gonna try that...

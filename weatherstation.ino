@@ -1,5 +1,4 @@
 #include <Adafruit_SGP30.h>
-
 #include "DEV_Config.h"
 #include "EPD.h"
 #include "GUI_Paint.h"
@@ -7,8 +6,10 @@
 #include <stdlib.h>
 #include <DHT.h>
 #include <Wire.h> 
-#include <Adafruit_BMP085.h>
+#include <Adafruit_BMP085.h> // Barometer - I2C:0x77
 #include <pins_arduino.h>
+#include "Adafruit_SGP30.h" // Air Quality I2C: 58
+
 
 // 400x300, 4.2inch E-Ink raw display
 // 9 x 7 cm display size
@@ -38,20 +39,41 @@ boolean Dstate=0;         //store the value of D0
 #define SOIL_DRYNESS_MEDIUM 1300
 #define SOIL_HUMIDITY_PIN 34 // Pin 34 5th from bottom right
 
+
+// AIR QUALITY constants
+#define VOC_LOW 25
+#define VOC_MED 75
+#define CO2_LOW 450
+#define CO2_MED 550
+
+
 // Functions declaration
 void drawSun(int x, int y);
 void drawWaterdrop(int x, int y);
 void drawProgressBar(int x, int y, int percent);
 void showSplashscreen();
-void processTemperatureHumidtyPressure();
+float getTemperature();
+float getHumidty();
+void processTemperatureHumidtyPressure(float temperature, float humidity);
 void processRainSensor();
 void processSoilHumidity();
+void processAirQuality();
+
 
 // --------------------------------------------
 
 
-
 // Air quality
+Adafruit_SGP30 sgp;
+
+uint32_t getAbsoluteHumidity(float temperature, float humidity) {
+    // approximation formula from Sensirion SGP30 Driver Integration chapter 3.15
+    const float absoluteHumidity = 216.7f * ((humidity / 100.0f) * 6.112f * exp((17.62f * temperature) / (243.12f + temperature)) / (273.15f + temperature)); // [g/m^3]
+    const uint32_t absoluteHumidityScaled = static_cast<uint32_t>(1000.0f * absoluteHumidity); // [mg/m^3]
+    return absoluteHumidityScaled;
+}
+
+// --- Air Quality
 
 void drawSun(int x, int y){
   Paint_DrawCircle(x, y, 5, BLACK, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
@@ -76,6 +98,11 @@ void drawWaterdrop(int x, int y){
 
 
 void drawProgressBar(int x, int y, int percent){
+  if (percent > 100) {
+    percent = 100;
+  } else if (percent < 0){
+    percent = 0;
+  }
   Paint_DrawRectangle(x, y, x+50, y+15, BLACK, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
   Paint_DrawRectangle(x, y, x+(percent/2), y+15, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
 }
@@ -86,17 +113,26 @@ void showSplashscreen() {
   Serial.println("SelectImage:BlackImage\r\n");
   Paint_SelectImage(BlackImage);
   Paint_Clear(WHITE);
-  Paint_DrawString_EN(105, 140, "Wetterstation", &Font24, WHITE, BLACK);
-  Paint_DrawLine(95, 170, 340, 170, BLACK, DOT_PIXEL_1X1, LINE_STYLE_DOTTED); // above
+  Paint_DrawString_EN(100, 140, "Wetterstation", &Font24, WHITE, BLACK);
+  Paint_DrawLine(90, 170, 340, 165, BLACK, DOT_PIXEL_1X1, LINE_STYLE_DOTTED); // above
   EPD_4IN2_Display(BlackImage);
 }
 
 
-void processTemperatureHumidtyPressure(){
+float getTemperature(){
+  return dht.readTemperature();
+}
+
+
+float getHumidty(){
+  return dht.readHumidity();
+}
+
+void processTemperatureHumidtyPressure(float temperature, float humidity){
   // Reading temperature or humidity takes about 250 milliseconds!
   // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
-  float humidity = dht.readHumidity();
-  float temperature = dht.readTemperature();
+  //float humidity = dht.readHumidity();
+  //float temperature = dht.readTemperature();
   int pressure = bmp.readPressure()/100;
 
   // Check if any reads failed and exit early (to try again).
@@ -194,11 +230,56 @@ void processSoilHumidity(){
 }
 
 
+void processAirQuality(float temperature, float humidity){
+  // If you have a temperature / humidity sensor, you can set the absolute
+  // humidity to enable the humditiy compensation for the air quality signals
+  sgp.setHumidity(getAbsoluteHumidity(temperature, humidity));
+
+  if (! sgp.IAQmeasure()) {
+    Serial.println("Measurement failed");
+    return;
+  }
+  int tvoc = sgp.TVOC;
+  int co2  = sgp.eCO2;
+  Serial.print("TVOC "); Serial.print(tvoc); Serial.println(" ppb\t");
+  Serial.print("eCO2 "); Serial.print(co2); Serial.println(" ppm");
+
+  Paint_DrawString_EN(20, 230, "Luft (TVOC):", &Font20, WHITE, BLACK);
+  if(tvoc < VOC_LOW){
+    Paint_DrawString_EN(200, 230, "OK", &Font20, WHITE, BLACK);
+  } else if (tvoc < VOC_MED) {
+    Paint_DrawString_EN(200, 230, "GUT", &Font20, WHITE, BLACK);
+  } else {
+    Paint_DrawString_EN(200, 230, "HOCH", &Font20, WHITE, BLACK);
+  }
+
+  Paint_DrawString_EN(20, 260, "Luft (CO2):", &Font20, WHITE, BLACK);
+  if(co2 < CO2_LOW){
+    Paint_DrawString_EN(200, 260, "OK", &Font20, WHITE, BLACK);
+  } else if (co2 < CO2_MED) {
+    Paint_DrawString_EN(200, 260, "GUT", &Font20, WHITE, BLACK);
+  } else {
+    Paint_DrawString_EN(200, 260, "HOCH", &Font20, WHITE, BLACK);
+  }
+
+  // Draw progess -> Air Quality
+  drawProgressBar(320, 230, (int)(tvoc)); // VOC every partice is 1%
+  drawProgressBar(320, 260, (int)((co2 - 400)/2)); // CO2 percentage is 1% for 2 over 400
+
+
+  if (! sgp.IAQmeasureRaw()) {
+    Serial.println("Raw Measurement failed");
+    return;
+  }
+}
+
+
+// --------------------------------------------------------
+// --------------------------------------------------------
 // --------------------------------------------------------
 
 
-void setup()
-{
+void setup(){
   DEV_Module_Init();
 
   Serial.begin(115200);
@@ -224,6 +305,19 @@ void setup()
     while (1);
   }
 
+
+  Serial.println("Starting SGP30");
+
+  if (! sgp.begin()){
+    Serial.println("Sensor not found :(");
+    while (1);
+  }
+
+  Serial.print("Found SGP30 serial #");
+  Serial.print(sgp.serialnumber[0], HEX);
+  Serial.print(sgp.serialnumber[1], HEX);
+  Serial.println(sgp.serialnumber[2], HEX);
+
   showSplashscreen();
 
   DEV_Delay_ms(500);
@@ -242,13 +336,18 @@ void loop()
   Paint_DrawString_EN(20, 20, "Wetter:", &Font24, WHITE, BLACK);
 
   // --- TEMPERATURE, HUMIDITY, PRESSURE ---
-  processTemperatureHumidtyPressure();
+  float temp = getTemperature();
+  float humidty = getHumidty();
+  processTemperatureHumidtyPressure(temp, humidty);
 
   // ------ RAIN SENSOR ------
   processRainSensor();
 
   // ------ Soil Humidity ------
   processSoilHumidity();
+
+  // ------ Air Quality ------
+  processAirQuality(temp, humidty);
 
   // ------ Draw the image ------
   EPD_4IN2_Display(BlackImage);
