@@ -40,6 +40,11 @@ This is not the exact model but it seems to have the same pinout. Sadly the docu
 
 ![Pinout](doc/PinOut.webp "Pinout")
 
+
+The schematics look currently like that:
+![Schematics](doc/schematics.png "Schematics")
+
+
 Right now (06.08.23) it still looks like that (and in German only). But you get an idea where this project might go.
 
 ![First test](doc/weatherstation-alpha02.jpg "a first test")
@@ -106,3 +111,15 @@ This surely can be done better.
 # Known issues:
 
 When there is rain on the rain sensor, the voltage it draws seems to be too high and the display doesn't refresh anymore. I guess I have to plug this to the 5V. Gonna try that...
+
+
+# Schematics
+
+I tried to use Fritzing for a better schematics diagram.
+
+Since the software lacks some of the components I need, I used many of these repositories:
+
+https://github.com/sunfounder/sunfounder-uno-and-mega-kit
+https://github.com/jorgechacblogspot/librerias_fritzing
+https://github.com/OgreTransporter/fritzing-parts-extra/tree/master
+https://github.com/Seeed-Studio/fritzing_parts
