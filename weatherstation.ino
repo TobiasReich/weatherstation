@@ -35,8 +35,8 @@ boolean Dstate=0;         //store the value of D0
   - fully in Water          = 1100
   - mid humidity            = 1300
   - outside (at normal air) = 2100 */
-#define SOIL_DRYNESS_HIGH 2000   
-#define SOIL_DRYNESS_MEDIUM 1300
+#define SOIL_DRYNESS_HIGH 1900   
+#define SOIL_DRYNESS_MEDIUM 1150
 #define SOIL_HUMIDITY_PIN 34 // Pin 34 5th from bottom right
 
 
@@ -156,31 +156,31 @@ void processTemperatureHumidtyPressure(float temperature, float humidity){
     sprintf (hicbuffer, "%.1f C", heatIndex);
 
     // Temperature
-    Paint_DrawString_EN(20, 50, "Temperatur:", &Font20, WHITE, BLACK);
-    Paint_DrawString_EN(200, 50, tempbuffer, &Font20, WHITE, BLACK);
+    Paint_DrawString_EN(20, 70, "Temperatur:", &Font20, WHITE, BLACK);
+    Paint_DrawString_EN(200, 70, tempbuffer, &Font20, WHITE, BLACK);
 
     // Felt 
-    Paint_DrawString_EN(20, 80, "Gefuehlt:", &Font20, WHITE, BLACK);
-    Paint_DrawString_EN(200, 80, hicbuffer, &Font20, WHITE, BLACK);
+    Paint_DrawString_EN(20, 100, "Gefuehlt:", &Font20, WHITE, BLACK);
+    Paint_DrawString_EN(200, 100, hicbuffer, &Font20, WHITE, BLACK);
 
     // Humidity
     char humidbuffer [7];
     sprintf (humidbuffer, "  %.0f %%", humidity);
-    Paint_DrawString_EN(20, 110, "Luftfeucht.:", &Font20, WHITE, BLACK);
-    Paint_DrawString_EN(200, 110, humidbuffer, &Font20, WHITE, BLACK);
-    drawProgressBar(320, 110, (int)humidity);
+    Paint_DrawString_EN(20, 130, "Luftfeucht.:", &Font20, WHITE, BLACK);
+    Paint_DrawString_EN(200, 130, humidbuffer, &Font20, WHITE, BLACK);
+    drawProgressBar(320, 130, (int)humidity);
 
     //Pressure
     char pressurebuffer [9];
     sprintf (pressurebuffer, "%4d hpa", pressure);
-    Paint_DrawString_EN(20, 140, "Luftdruck:", &Font20, WHITE, BLACK);
-    Paint_DrawString_EN(200, 140, pressurebuffer, &Font20, WHITE, BLACK);
+    Paint_DrawString_EN(20, 160, "Luftdruck:", &Font20, WHITE, BLACK);
+    Paint_DrawString_EN(200, 160, pressurebuffer, &Font20, WHITE, BLACK);
   }
 }
 
-
+/*
 void processRainSensor(){
-  Paint_DrawString_EN(20, 170, "Regen:", &Font20, WHITE, BLACK);
+  Paint_DrawString_EN(20, 190, "Regen:", &Font20, WHITE, BLACK);
   Astate=analogRead(analogPin);  //read the value of A0
   Serial.print("A0: ");
   Serial.println(Astate);  //print the value in the serial monitor
@@ -191,41 +191,42 @@ void processRainSensor(){
   //TODO Might use the Analogue value instead if more variety is needed
   if(Dstate==HIGH) {
     Serial.println("NO RAIN");
-    Paint_DrawString_EN(200, 170, "Nein", &Font20, WHITE, BLACK);
+    Paint_DrawString_EN(200, 190, "Nein", &Font20, WHITE, BLACK);
   } else {
     Serial.println("RAIN");
     //if the value of D0 is LOW
-    Paint_DrawString_EN(200, 170, "Ja", &Font20, WHITE, BLACK);
-    drawWaterdrop(320, 170);
-    drawWaterdrop(335, 170);
-    drawWaterdrop(350, 170);
+    Paint_DrawString_EN(200, 190, "Ja", &Font20, WHITE, BLACK);
+    drawWaterdrop(320, 190);
+    drawWaterdrop(335, 190);
+    drawWaterdrop(350, 190);
   }
 }
-
+*/
 
 void processSoilHumidity(){
   int soilDryness = analogRead(SOIL_HUMIDITY_PIN);
   Serial.println(soilDryness);
 
-  Paint_DrawString_EN(20, 200, "Boden:", &Font20, WHITE, BLACK);
+  Paint_DrawString_EN(20, 190, "Boden:", &Font20, WHITE, BLACK);
 
   // print out the value you read:
   if (soilDryness > SOIL_DRYNESS_HIGH){
     // DRYEST
     Serial.println("DRY");
-    Paint_DrawString_EN(200, 200, "TROCKEN", &Font20, WHITE, BLACK);
-    drawSun(320, 205);  
+    Paint_DrawString_EN(200, 190, "TROCKEN", &Font20, WHITE, BLACK);
+    drawSun(325, 195);  
   } else if (soilDryness > SOIL_DRYNESS_MEDIUM) {
     // MID HUMID
     Serial.println("MID");
-    Paint_DrawString_EN(200, 200, "Gut", &Font20, WHITE, BLACK);
-    drawWaterdrop(320, 205);
+    Paint_DrawString_EN(200, 190, "Gut", &Font20, WHITE, BLACK);
+    drawWaterdrop(325, 195);
   } else {
     // WET
     Serial.println("Wet");
-    Paint_DrawString_EN(200, 200, "FEUCHT", &Font20, WHITE, BLACK);
-    drawWaterdrop(320, 205);
-    drawWaterdrop(335, 205);
+    Paint_DrawString_EN(200, 190, "Nass", &Font20, WHITE, BLACK);
+    drawWaterdrop(325, 195);
+    drawWaterdrop(340, 195);
+    drawWaterdrop(355, 195);
   }
 }
 
@@ -244,28 +245,36 @@ void processAirQuality(float temperature, float humidity){
   Serial.print("TVOC "); Serial.print(tvoc); Serial.println(" ppb\t");
   Serial.print("eCO2 "); Serial.print(co2); Serial.println(" ppm");
 
-  Paint_DrawString_EN(20, 230, "Luft (TVOC):", &Font20, WHITE, BLACK);
+  boolean isHigh = false;
+
+  Paint_DrawString_EN(20, 220, "Luft (TVOC):", &Font20, WHITE, BLACK);
   if(tvoc < VOC_LOW){
-    Paint_DrawString_EN(200, 230, "OK", &Font20, WHITE, BLACK);
+    Paint_DrawString_EN(200, 220, "OK", &Font20, WHITE, BLACK);
   } else if (tvoc < VOC_MED) {
-    Paint_DrawString_EN(200, 230, "GUT", &Font20, WHITE, BLACK);
+    Paint_DrawString_EN(200, 220, "GUT", &Font20, WHITE, BLACK);
   } else {
-    Paint_DrawString_EN(200, 230, "HOCH", &Font20, WHITE, BLACK);
+    Paint_DrawString_EN(200, 220, "HOCH", &Font20, WHITE, BLACK);
+    isHigh = true;
   }
 
-  Paint_DrawString_EN(20, 260, "Luft (CO2):", &Font20, WHITE, BLACK);
+  Paint_DrawString_EN(20, 250, "Luft (CO2):", &Font20, WHITE, BLACK);
   if(co2 < CO2_LOW){
-    Paint_DrawString_EN(200, 260, "OK", &Font20, WHITE, BLACK);
+    Paint_DrawString_EN(200, 250, "OK", &Font20, WHITE, BLACK);
   } else if (co2 < CO2_MED) {
-    Paint_DrawString_EN(200, 260, "GUT", &Font20, WHITE, BLACK);
+    Paint_DrawString_EN(200, 250, "GUT", &Font20, WHITE, BLACK);
   } else {
-    Paint_DrawString_EN(200, 260, "HOCH", &Font20, WHITE, BLACK);
+    Paint_DrawString_EN(200, 250, "HOCH", &Font20, WHITE, BLACK);
+    isHigh = true;
   }
 
   // Draw progess -> Air Quality
-  drawProgressBar(320, 230, (int)(tvoc)); // VOC every partice is 1%
-  drawProgressBar(320, 260, (int)((co2 - 400)/2)); // CO2 percentage is 1% for 2 over 400
+  drawProgressBar(320, 220, (int)(tvoc)); // VOC every partice is 1%
+  drawProgressBar(320, 250, (int)((co2 - 400)/2)); // CO2 percentage is 1% for 2 over 400
 
+  // if any of the air quality values is "too high" a message "open the windows" appears
+  if(isHigh){
+    Paint_DrawString_EN(20, 280, "--- FENSTER AUF! ---", &Font20, WHITE, BLACK);
+  }
 
   if (! sgp.IAQmeasureRaw()) {
     Serial.println("Raw Measurement failed");
@@ -283,6 +292,10 @@ void setup(){
   DEV_Module_Init();
 
   Serial.begin(115200);
+  while (!Serial) {
+  ;  // wait for serial port to connect. Needed for native USB port only
+  }
+
   Serial.println("Weather Station");
 
   // Init the Barometer
@@ -309,7 +322,7 @@ void setup(){
   Serial.println("Starting SGP30");
 
   if (! sgp.begin()){
-    Serial.println("Sensor not found :(");
+    Serial.println("SGP Air quality sensor not found :(");
     while (1);
   }
 
@@ -324,11 +337,7 @@ void setup(){
 }
 
 
-void loop()
-{
-  // Delay between measurements.
-  DEV_Delay_ms(REFRESH_TIME);
-
+void loop() {
   // Draw the results screen
   Paint_Clear(WHITE);
 
@@ -341,7 +350,7 @@ void loop()
   processTemperatureHumidtyPressure(temp, humidty);
 
   // ------ RAIN SENSOR ------
-  processRainSensor();
+  //processRainSensor();
 
   // ------ Soil Humidity ------
   processSoilHumidity();
@@ -351,6 +360,9 @@ void loop()
 
   // ------ Draw the image ------
   EPD_4IN2_Display(BlackImage);
+
+  // Delay between measurements.
+  DEV_Delay_ms(REFRESH_TIME);
 }
 
 
