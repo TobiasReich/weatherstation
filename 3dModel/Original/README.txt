@@ -1,0 +1,1 @@
+4.2" E-Paper Weather Station w/ ESP32 - Case by Wi_Zeus on Thingiverse: https://www.thingiverse.com/thing:2954579
