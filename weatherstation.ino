@@ -23,7 +23,7 @@ Adafruit_BMP085 bmp;      // I2C controlled Barometer
 UBYTE *BlackImage;
 UWORD Imagesize = ((EPD_4IN2_WIDTH % 8 == 0) ? (EPD_4IN2_WIDTH / 8 ) : (EPD_4IN2_WIDTH / 8 + 1)) * EPD_4IN2_HEIGHT;
 
-uint32_t REFRESH_TIME = 5000;
+uint32_t REFRESH_TIME = 60000; //millis -> every minute
 
 // Rain Sensor
 const int analogPin=A0;   //the AO of the module attach to A0 (PIN 36) (Left 3rd from top)
@@ -114,7 +114,7 @@ void showSplashscreen() {
   Paint_SelectImage(BlackImage);
   Paint_Clear(WHITE);
   Paint_DrawString_EN(100, 140, "Wetterstation", &Font24, WHITE, BLACK);
-  Paint_DrawLine(90, 170, 340, 165, BLACK, DOT_PIXEL_1X1, LINE_STYLE_DOTTED); // above
+  Paint_DrawLine(90, 165, 335, 165, BLACK, DOT_PIXEL_2X2, LINE_STYLE_DOTTED); // above
   EPD_4IN2_Display(BlackImage);
 }
 
@@ -296,7 +296,7 @@ void setup(){
   ;  // wait for serial port to connect. Needed for native USB port only
   }
 
-  Serial.println("Weather Station");
+  Serial.println("Wetter Station");
 
   // Init the Barometer
   if (!bmp.begin()) {
@@ -343,6 +343,7 @@ void loop() {
 
   // Write parameters
   Paint_DrawString_EN(20, 20, "Wetter:", &Font24, WHITE, BLACK);
+  Paint_DrawLine(20, 43, 135, 43, BLACK, DOT_PIXEL_1X1, LINE_STYLE_SOLID); // above
 
   // --- TEMPERATURE, HUMIDITY, PRESSURE ---
   float temp = getTemperature();
