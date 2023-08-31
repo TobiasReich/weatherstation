@@ -35,7 +35,7 @@ boolean Dstate=0;         //store the value of D0
   - fully in Water          = 1100
   - mid humidity            = 1300
   - outside (at normal air) = 2100 */
-#define SOIL_DRYNESS_HIGH 1900   
+#define SOIL_DRYNESS_HIGH 2000
 #define SOIL_DRYNESS_MEDIUM 1150
 #define SOIL_HUMIDITY_PIN 34 // Pin 34 5th from bottom right
 
@@ -45,6 +45,8 @@ boolean Dstate=0;         //store the value of D0
 #define VOC_MED 75
 #define CO2_LOW 450
 #define CO2_MED 550
+
+#define DEBUG true
 
 
 // Functions declaration
@@ -228,6 +230,13 @@ void processSoilHumidity(){
     drawWaterdrop(340, 195);
     drawWaterdrop(355, 195);
   }
+
+  if (DEBUG){
+    char debugText[10 * sizeof(char)];
+    std::sprintf(debugText, "%d", soilDryness);
+    Paint_DrawString_EN(300, 290, "Boden:" , &Font8, WHITE, BLACK);
+    Paint_DrawString_EN(350, 290, debugText , &Font8, WHITE, BLACK);
+  }
 }
 
 
@@ -244,6 +253,7 @@ void processAirQuality(float temperature, float humidity){
   int co2  = sgp.eCO2;
   Serial.print("TVOC "); Serial.print(tvoc); Serial.println(" ppb\t");
   Serial.print("eCO2 "); Serial.print(co2); Serial.println(" ppm");
+
 
   boolean isHigh = false;
 
@@ -273,9 +283,22 @@ void processAirQuality(float temperature, float humidity){
 
   // if any of the air quality values is "too high" a message "open the windows" appears
   if(isHigh){
-    Paint_DrawString_EN(20, 280, "--- FENSTER AUF! ---", &Font20, WHITE, BLACK);
+    Paint_DrawString_EN(200, 20, "FENSTER AUF", &Font24, WHITE, BLACK);
   }
 
+  if (DEBUG){
+    // Writing some debug values    
+    char airQualityText[10 * sizeof(char)];
+
+    Paint_DrawString_EN(20, 290, "Debug: ", &Font8, WHITE, BLACK);
+    std::sprintf(airQualityText, "%d", tvoc);
+    Paint_DrawString_EN(80, 290, "TVOC: " , &Font8, WHITE, BLACK);
+    Paint_DrawString_EN(140, 290, airQualityText , &Font8, WHITE, BLACK);
+
+    Paint_DrawString_EN(180, 290, "CO2: " , &Font8, WHITE, BLACK);
+    std::sprintf(airQualityText, "%d", co2);
+    Paint_DrawString_EN(220, 290, airQualityText , &Font8, WHITE, BLACK);
+  }
   if (! sgp.IAQmeasureRaw()) {
     Serial.println("Raw Measurement failed");
     return;

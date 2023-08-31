@@ -45,9 +45,10 @@ The schematics look currently like that:
 ![Schematics](doc/schematics.png "Schematics")
 
 
-Right now (06.08.23) it still looks like that (and in German only). But you get an idea where this project might go.
+The first version of it (which is in usage) looks like that (and in German only).
 
-![First test](doc/weatherstation-alpha02.jpg "a first test")
+![First test](doc/weatherstation-final.jpg "The final usage")
+
 
 
 ## Barometer
@@ -83,6 +84,16 @@ This is connected via a Raindrop Sensor (which connects again to the device).
 - White - GPIO ??
 - Brown - GPIO ??
 
+Note that the soil moisture sensor is just an analog one. It checks the resistence and varies for example if you provide 3.3V or 5V to it.
+Hence the setup might vary your constants.
+
+I plugged it to 3.3 volt and defined the constants as
+
+- SOIL_DRYNESS_HIGH 2000
+
+- SOIL_DRYNESS_MEDIUM 1150
+
+where the analog value goes higher the dryer the ground is.
 
 ## Air Quality Sensor
 
@@ -98,10 +109,14 @@ I also calculate the "air quality" by very simple means.
 
 These are the constants I use:
 
-#define VOC_LOW 25
-#define VOC_MED 75
-#define CO2_LOW 450
-#define CO2_MED 550
+- VOC_LOW 25
+
+- VOC_MED 75
+
+- CO2_LOW 450
+
+- CO2_MED 550
+
 
 And I draw them on the display in a very simple graph, indicating the quality.
 This surely can be done better.
@@ -110,7 +125,18 @@ This surely can be done better.
 
 # Known issues:
 
-When there is rain on the rain sensor, the voltage it draws seems to be too high and the display doesn't refresh anymore. I guess I have to plug this to the 5V. Gonna try that...
+1. When there is rain on the rain sensor, the voltage it draws seems to be too high and the display doesn't refresh anymore. I therefore (and for it's limited usage) removed the sensor for version 1.
+
+2. Also the case I printed comes with some drawbacks. Even as a physics enthusiast it took a while to realize that CO2 is heavier than O2. And with basically no opening in the case the CO2 value was rising over the time to higher and higher values. In any case you should avoid placing the air quality sensor at the bottom of the case! And add some holes to the rear side.
+
+3. Furthermore you need to make sure the temperature sensor is not too close to the ESP32. In my example the heat from the processor is radiating to the temperature sensor leading to 1-2 degrees higher temperature.
+
+I originally thought I could put it inside like this:
+
+![First test](doc/internals.jpg "the planned interior.")
+
+which would be still not great but not horrible either. However, with the tiny case I had to squeeze eveything to gether ending up with a crammed case where everything is right next to eachother. Version 2 has to be a little bigger!
+
 
 
 # Schematics
