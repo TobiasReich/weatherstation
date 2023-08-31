@@ -70,7 +70,7 @@ This is connected via a Raindrop Sensor (which connects again to the device).
 - Brown - GPIO 25 (D0)
 
 
-## Humiture Sensor
+## Humidity Sensor
 
 - Black - GROUND
 - Red - 3.3V
