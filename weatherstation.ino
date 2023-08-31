@@ -43,8 +43,8 @@ boolean Dstate=0;         //store the value of D0
 // AIR QUALITY constants
 #define VOC_LOW 25
 #define VOC_MED 75
-#define CO2_LOW 450
-#define CO2_MED 550
+#define CO2_LOW 475
+#define CO2_MED 600
 
 #define DEBUG true
 
@@ -279,7 +279,7 @@ void processAirQuality(float temperature, float humidity){
 
   // Draw progess -> Air Quality
   drawProgressBar(320, 220, (int)(tvoc)); // VOC every partice is 1%
-  drawProgressBar(320, 250, (int)((co2 - 400)/2)); // CO2 percentage is 1% for 2 over 400
+  drawProgressBar(320, 250, (int)((co2 - 400)/3)); // CO2 percentage is 1% for 3 over 400. So Co2 of 700 is full (i.e. bad air)
 
   // if any of the air quality values is "too high" a message "open the windows" appears
   if(isHigh){
