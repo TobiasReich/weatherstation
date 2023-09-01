@@ -129,7 +129,9 @@ This surely can be done better.
 
 2. Also the case I printed comes with some drawbacks. Even as a physics enthusiast it took a while to realize that CO2 is heavier than O2. And with basically no opening in the case the CO2 value was rising over the time to higher and higher values. In any case you should avoid placing the air quality sensor at the bottom of the case! And add some holes to the rear side.
 
-3. Furthermore you need to make sure the temperature sensor is not too close to the ESP32. In my example the heat from the processor is radiating to the temperature sensor leading to 1-2 degrees higher temperature.
+3. Turns out, the glue I was using for fusing the PLA casing, is evaporating "volatile particles" thus influencing the TVOC reading. A quick fix would be either to move the sensor outside or use a different glue. I guess in the long term it will reduce it's evaporation, too but the best solution might be a better case (with lots of openings and less glue required).
+
+4. Furthermore you need to make sure the temperature sensor is not too close to the ESP32. In my example the heat from the processor is radiating to the temperature sensor leading to 1-2 degrees higher temperature.
 
 I originally thought I could put it inside like this:
 
