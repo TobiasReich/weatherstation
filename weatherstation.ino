@@ -23,7 +23,16 @@ Adafruit_BMP085 bmp;      // I2C controlled Barometer
 UBYTE *BlackImage;
 UWORD Imagesize = ((EPD_4IN2_WIDTH % 8 == 0) ? (EPD_4IN2_WIDTH / 8 ) : (EPD_4IN2_WIDTH / 8 + 1)) * EPD_4IN2_HEIGHT;
 
-uint32_t REFRESH_TIME = 60000; //millis -> every minute
+// Millis for the measurement update
+// Note this also refreshes the screen (visibly).
+// Since this can cause distractions and the weather 
+// doesn't change that rapidly, it is perfectly fine to pick
+// high values like
+// 600000 -> every 10 minutes
+// 3600000 -> every hour 
+// or even more
+uint32_t REFRESH_TIME = 600000; 
+
 
 // Rain Sensor
 const int analogPin=A0;   //the AO of the module attach to A0 (PIN 36) (Left 3rd from top)
@@ -67,6 +76,11 @@ void processAirQuality();
 
 // Air quality
 Adafruit_SGP30 sgp;
+
+// The air quality calculation seems a bit fickle so it might be more reliable 
+// to store the previous value and use the mean value
+int previousTvoc = 0;
+int previousCo2  = 400;
 
 uint32_t getAbsoluteHumidity(float temperature, float humidity) {
     // approximation formula from Sensirion SGP30 Driver Integration chapter 3.15
@@ -254,6 +268,10 @@ void processAirQuality(float temperature, float humidity){
   Serial.print("TVOC "); Serial.print(tvoc); Serial.println(" ppb\t");
   Serial.print("eCO2 "); Serial.print(co2); Serial.println(" ppm");
 
+  // in order to flatten air quality values (which are a bit fickle)
+  // we calculate tvoc and co2 as the mean of this and the last measurement
+  tvoc = (previousTvoc + tvoc) / 2; 
+  co2  = (previousCo2 + co2) /2;
 
   boolean isHigh = false;
 
