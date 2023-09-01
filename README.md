@@ -1,5 +1,10 @@
-# weatherstation
-A local weather station for testing ESP32 sensors
+# Weatherstation
+
+As part of my studies I wanted to experiment with the smallest devices and sensors I could get.
+This became a local (indoor) weather station built up with an ESP32 and sensors.
+
+If you are looking for a cheap weather station you might find this somewhere else. This is more a hobby, a kind of a playground for sensors and C programming.
+
 
 ## Overview
 
@@ -11,19 +16,26 @@ The idea is to
 
 ## Devices
 
-ESP32 device:
+1. ESP32 device:
 https://www.waveshare.com/wiki/E-Paper_ESP32_Driver_Board
 
-E-Paper display:
-https://www.waveshare.com/4.2inch-e-paper-module.htm
+1. E-Paper display:
+I used the 400x300 pixel e-paper display from Waveshare: https://www.waveshare.com/4.2inch-e-paper-module.htm
 
-Sensors:
-https://www.sunfounder.com/products/sensor-kit-v2-for-arduino?_pos=2&_sid=1bdf16cc9&_ss=r
+1. Sensors:
 
-I use explicitly the
+I used the following sensors:
+
+- Thermometer
 - Barometer
-- Raindrop Sensor
+- ~~Raindrop Sensor~~
 - Humidity Sensor
+- Soil Humidity sensor (for knowing whether I have to water the plants)
+- Air Quality sensor (CO2 and TVOC)
+
+Many came from here:
+
+https://www.sunfounder.com/products/sensor-kit-v2-for-arduino?_pos=2&_sid=1bdf16cc9&_ss=r
 
 Furthermore the device uses a soil moisture senesor from here:
 
@@ -34,7 +46,7 @@ And an air quality sensor from here:
 https://wiki.seeedstudio.com/Grove-VOC_and_eCO2_Gas_Sensor-SGP30/
 
 
-# Pinouts (for now)
+# Pinouts
 
 This is not the exact model but it seems to have the same pinout. Sadly the documentation on Waveshare is not the best.
 
