@@ -49,6 +49,13 @@ The first version of it (which is in usage) looks like that (and in German only)
 
 ![First test](doc/weatherstation-final.jpg "The final usage")
 
+Version 2 also got a graph showing the recent 10 hours (20 measurements) for TVOC and CO2 readings.
+That way you can keep track of the situation. This might come handy in situations where you have the suspicion of raising values (e.g. over night, with a closed window).
+![First test](doc/diagram.jpg "adding a diagram")
+
+
+
+
 
 
 ## Barometer

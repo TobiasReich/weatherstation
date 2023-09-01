@@ -29,9 +29,10 @@ UWORD Imagesize = ((EPD_4IN2_WIDTH % 8 == 0) ? (EPD_4IN2_WIDTH / 8 ) : (EPD_4IN2
 // doesn't change that rapidly, it is perfectly fine to pick
 // high values like
 // 600000 -> every 10 minutes
+// 1800000 -> every 30 minutes
 // 3600000 -> every hour 
 // or even more
-uint32_t REFRESH_TIME = 600000; 
+uint32_t REFRESH_TIME = 1800000; 
 
 
 // Rain Sensor
@@ -56,7 +57,9 @@ boolean Dstate=0;         //store the value of D0
 #define CO2_MED 600
 
 #define DEBUG true
-
+#define STORED_VALUES 20
+#define DIAGRAM_HEIGHT 25
+#define DIAGRAM_WIDTH 200
 
 // Functions declaration
 void drawSun(int x, int y);
@@ -81,6 +84,11 @@ Adafruit_SGP30 sgp;
 // to store the previous value and use the mean value
 int previousTvoc = 0;
 int previousCo2  = 400;
+
+// For a "histogram" of previous values
+int previousCo2Values[STORED_VALUES] = {0};
+int previousTvocValues[STORED_VALUES] = {0};
+
 
 uint32_t getAbsoluteHumidity(float temperature, float humidity) {
     // approximation formula from Sensirion SGP30 Driver Integration chapter 3.15
@@ -121,6 +129,51 @@ void drawProgressBar(int x, int y, int percent){
   }
   Paint_DrawRectangle(x, y, x+50, y+15, BLACK, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
   Paint_DrawRectangle(x, y, x+(percent/2), y+15, BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
+}
+
+
+/** Draws a diagram of values. For simplicity I gave it a fixed size of 10 elements.
+    the min parameter subtracts this value from all values so the min value becomes "0"
+    in the graph
+    1. find the max value of the array
+    2. calculate the scale factor so we cann draw the diagram propperly
+    3. draw bars (for simplicity) for each of the 10 values */
+void drawDiagramm(int (&values)[STORED_VALUES], int x, int y, int min = 0){
+  // Draw an empty graph in any case
+  Paint_DrawRectangle(x, y, x+DIAGRAM_WIDTH, y+DIAGRAM_HEIGHT, BLACK, DOT_PIXEL_1X1, DRAW_FILL_EMPTY);
+
+  // Calculate the values
+  int bucketWidth = DIAGRAM_WIDTH / STORED_VALUES;
+  int max = 0;
+  float scale = 0.0;
+
+  for(int i=0; i<STORED_VALUES; i++){
+    if ((values[i]-min) > max){
+      max = values[i] - min;
+    }
+  }
+
+  // no max value found, no need to render a graph
+  if (max == 0){
+    Serial.println("\nNo values to print!");
+    return;
+  }
+
+  // Calculate the scale all values have to be multiplied before they are drawn
+  // E.g. a max of 100 with a diagram height of 50 leads to a scale of 0.5f
+  // E.g. the 100 value will be scaled down to 50pixels
+  scale = static_cast<float>(DIAGRAM_HEIGHT) / static_cast<float>(max);
+
+  // Draw the graph now
+  for(int i=0; i < STORED_VALUES; i++){
+    int value = static_cast<float>(values[i]-min) * scale;
+    // if the bucket is still filled with 0 values, we don't have to draw that
+    if (value > 0){
+      Paint_DrawRectangle(x+(i*bucketWidth), y+(DIAGRAM_HEIGHT - value),
+                          x+((i+1)*bucketWidth)-1, y+DIAGRAM_HEIGHT, 
+                          BLACK, DOT_PIXEL_1X1, DRAW_FILL_FULL);
+    }
+  }
 }
 
 
@@ -194,30 +247,6 @@ void processTemperatureHumidtyPressure(float temperature, float humidity){
   }
 }
 
-/*
-void processRainSensor(){
-  Paint_DrawString_EN(20, 190, "Regen:", &Font20, WHITE, BLACK);
-  Astate=analogRead(analogPin);  //read the value of A0
-  Serial.print("A0: ");
-  Serial.println(Astate);  //print the value in the serial monitor
-  Dstate=digitalRead(digitalPin);  //read the value of D0
-  Serial.print("D0: ");
-  Serial.println(Dstate);
-
-  //TODO Might use the Analogue value instead if more variety is needed
-  if(Dstate==HIGH) {
-    Serial.println("NO RAIN");
-    Paint_DrawString_EN(200, 190, "Nein", &Font20, WHITE, BLACK);
-  } else {
-    Serial.println("RAIN");
-    //if the value of D0 is LOW
-    Paint_DrawString_EN(200, 190, "Ja", &Font20, WHITE, BLACK);
-    drawWaterdrop(320, 190);
-    drawWaterdrop(335, 190);
-    drawWaterdrop(350, 190);
-  }
-}
-*/
 
 void processSoilHumidity(){
   int soilDryness = analogRead(SOIL_HUMIDITY_PIN);
@@ -255,14 +284,23 @@ void processSoilHumidity(){
 
 
 void processAirQuality(float temperature, float humidity){
+  if (! sgp.IAQmeasureRaw()) {
+    Serial.println("Raw Measurement failed");
+    Paint_DrawString_EN(20, 220, "Luft: Fehler 1", &Font20, WHITE, BLACK);
+    return;
+  }
+
+  if (! sgp.IAQmeasure()) {
+    Serial.println("Measurement failed");
+    Paint_DrawString_EN(20, 220, "Luft: Fehler 2", &Font20, WHITE, BLACK);
+    return;
+  }
+
   // If you have a temperature / humidity sensor, you can set the absolute
   // humidity to enable the humditiy compensation for the air quality signals
   sgp.setHumidity(getAbsoluteHumidity(temperature, humidity));
 
-  if (! sgp.IAQmeasure()) {
-    Serial.println("Measurement failed");
-    return;
-  }
+
   int tvoc = sgp.TVOC;
   int co2  = sgp.eCO2;
   Serial.print("TVOC "); Serial.print(tvoc); Serial.println(" ppb\t");
@@ -275,29 +313,25 @@ void processAirQuality(float temperature, float humidity){
 
   boolean isHigh = false;
 
-  Paint_DrawString_EN(20, 220, "Luft (TVOC):", &Font20, WHITE, BLACK);
+  Paint_DrawString_EN(20, 220, "TVOC:", &Font20, WHITE, BLACK);
   if(tvoc < VOC_LOW){
-    Paint_DrawString_EN(200, 220, "OK", &Font20, WHITE, BLACK);
+    Paint_DrawString_EN(100, 220, "OK", &Font20, WHITE, BLACK);
   } else if (tvoc < VOC_MED) {
-    Paint_DrawString_EN(200, 220, "GUT", &Font20, WHITE, BLACK);
+    Paint_DrawString_EN(100, 220, "GUT", &Font20, WHITE, BLACK);
   } else {
-    Paint_DrawString_EN(200, 220, "HOCH", &Font20, WHITE, BLACK);
+    Paint_DrawString_EN(100, 220, "HOCH", &Font20, WHITE, BLACK);
     isHigh = true;
   }
 
-  Paint_DrawString_EN(20, 250, "Luft (CO2):", &Font20, WHITE, BLACK);
+  Paint_DrawString_EN(20, 250, "CO2", &Font20, WHITE, BLACK);
   if(co2 < CO2_LOW){
-    Paint_DrawString_EN(200, 250, "OK", &Font20, WHITE, BLACK);
+    Paint_DrawString_EN(100, 250, "OK", &Font20, WHITE, BLACK);
   } else if (co2 < CO2_MED) {
-    Paint_DrawString_EN(200, 250, "GUT", &Font20, WHITE, BLACK);
+    Paint_DrawString_EN(100, 250, "GUT", &Font20, WHITE, BLACK);
   } else {
-    Paint_DrawString_EN(200, 250, "HOCH", &Font20, WHITE, BLACK);
+    Paint_DrawString_EN(100, 250, "HOCH", &Font20, WHITE, BLACK);
     isHigh = true;
   }
-
-  // Draw progess -> Air Quality
-  drawProgressBar(320, 220, (int)(tvoc)); // VOC every partice is 1%
-  drawProgressBar(320, 250, (int)((co2 - 400)/3)); // CO2 percentage is 1% for 3 over 400. So Co2 of 700 is full (i.e. bad air)
 
   // if any of the air quality values is "too high" a message "open the windows" appears
   if(isHigh){
@@ -317,10 +351,21 @@ void processAirQuality(float temperature, float humidity){
     std::sprintf(airQualityText, "%d", co2);
     Paint_DrawString_EN(220, 290, airQualityText , &Font8, WHITE, BLACK);
   }
-  if (! sgp.IAQmeasureRaw()) {
-    Serial.println("Raw Measurement failed");
-    return;
+
+  // Diagram magic here
+  // 1. shift all values of the "diagram array" to the left,
+  // 2. add the current value to the end
+
+  for (int i=0; i<STORED_VALUES; i++){
+    previousTvocValues[i] = previousTvocValues[i+1];
+    previousCo2Values[i] = previousCo2Values[i+1];
   }
+  
+  previousTvocValues[STORED_VALUES-1] = tvoc;
+  previousCo2Values[STORED_VALUES-1] = co2;
+
+  drawDiagramm(previousTvocValues, 200, 220);
+  drawDiagramm(previousCo2Values, 200, 250, 400);
 }
 
 
@@ -390,9 +435,6 @@ void loop() {
   float temp = getTemperature();
   float humidty = getHumidty();
   processTemperatureHumidtyPressure(temp, humidty);
-
-  // ------ RAIN SENSOR ------
-  //processRainSensor();
 
   // ------ Soil Humidity ------
   processSoilHumidity();
