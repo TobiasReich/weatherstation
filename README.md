@@ -51,7 +51,7 @@ The first version of it (which is in usage) looks like that (and in German only)
 
 Version 2 also got a graph showing the recent 10 hours (20 measurements) for TVOC and CO2 readings.
 That way you can keep track of the situation. This might come handy in situations where you have the suspicion of raising values (e.g. over night, with a closed window).
-![First test](doc/diagram.jpg "adding a diagram")
+![Version 2](doc/with_diagrams.jpg "adding a diagram")
 
 
 
@@ -67,14 +67,16 @@ That way you can keep track of the situation. This might come handy in situation
 - I2C: 0x77
 
 
-## Raindrop Sensor
+## ~~Raindrop Sensor~~
 
-This is connected via a Raindrop Sensor (which connects again to the device).
+~~This is connected via a Raindrop Sensor (which connects again to the device).~~
 
 - Black - GROUND
 - Red - 3.3V
 - White - GPIO 36 (ANALOG AO)
 - Brown - GPIO 25 (D0)
+
+Note: I removed it since it was not very useful. Placing it indoors made no sense, outdoors not much either (you see it anyway, you can measure it with the soil moisture sensor...). It just made things more complex and was useless.
 
 
 ## Humidity Sensor
